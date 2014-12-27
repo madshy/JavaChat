@@ -113,7 +113,7 @@ public class Account extends Info {
 	 * @param frd
 	 * @return boolean
 	 */
-	public boolean addGroup(Friend grp)
+	public boolean addGroup(Group grp)
 	{
 		return groups.add(grp);
 	}

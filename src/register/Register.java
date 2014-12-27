@@ -2,6 +2,7 @@ package register;
 
 import database.*;
 import acc_info.*;
+
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -19,6 +20,9 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.sql.Date;
 import java.util.Scanner;
 import java.util.Vector;
@@ -31,11 +35,14 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.text.html.ImageView;
+
+import message.Message;
 
 @SuppressWarnings("serial")
 public final class Register extends JFrame implements MouseListener, MouseMotionListener{
@@ -779,7 +786,41 @@ public final class Register extends JFrame implements MouseListener, MouseMotion
 //			µã»÷×¢²á°´Å¥
 			if (e.getSource() == regButton)
 			{
-
+				Message msg = new Message();
+				Account acc = new Account();
+				acc.setAccount(accField.getText().toString());
+				acc.setPsw(new String(pswFirstField.getPassword()));
+				acc.setName(nameField.getText());
+				acc.setSex(boyRadio.isSelected());
+				acc.setBirthday();
+				msg.setType(Message.Type.LOGIN);
+				msg.setContent(acc);
+				
+				try{
+					Socket socket = new Socket("localhost", 9999);
+					ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+					ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+					oos.writeObject(msg);
+					Message receiveMsg = (Message)ois.readObject();
+					
+					switch(receiveMsg.getType())
+					{
+						case Message.Type.LOGINFAIL:
+							JOptionPane.showMessageDialog(Register.this, "µÇÂ¼Ê§°Ü£¬ÇëÖØÐÂµÇÂ¼");
+							socket.close();
+							return ;
+						
+						default:
+//							new LoggedUI(((Account)receiveMsg.getContent()));
+							System.out.println("µÇÂ½³É¹¦");
+							Register.this.dispose();
+					}
+				}catch (Exception ex)
+				{
+					ex.printStackTrace();
+					JOptionPane.showMessageDialog(Register.this, "ÍøÂçÁ¬½ÓÒì³£");
+					System.exit(-1);
+				}
 			}
 		}
 		
