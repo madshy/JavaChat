@@ -42,6 +42,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.text.html.ImageView;
 
+import login.Login;
 import message.Message;
 
 @SuppressWarnings("serial")
@@ -792,8 +793,10 @@ public final class Register extends JFrame implements MouseListener, MouseMotion
 				acc.setPsw(new String(pswFirstField.getPassword()));
 				acc.setName(nameField.getText());
 				acc.setSex(boyRadio.isSelected());
-				acc.setBirthday();
-				msg.setType(Message.Type.LOGIN);
+				acc.setBirthday(((Integer)yearComboBox.getSelectedItem()).toString() + "-"
+						+ ((Integer)monthComboBox.getSelectedItem()).toString() + "-"
+						+ ((Integer)dayComboBox.getSelectedItem()).toString());
+				msg.setType(Message.Type.REGISTER);
 				msg.setContent(acc);
 				
 				try{
@@ -805,14 +808,15 @@ public final class Register extends JFrame implements MouseListener, MouseMotion
 					
 					switch(receiveMsg.getType())
 					{
-						case Message.Type.LOGINFAIL:
-							JOptionPane.showMessageDialog(Register.this, "µÇÂ¼Ê§°Ü£¬ÇëÖØÐÂµÇÂ¼");
+						case Message.Type.REGISTERFAIL:
+							JOptionPane.showMessageDialog(Register.this, "×¢²áÊ§°Ü");
 							socket.close();
 							return ;
 						
 						default:
 //							new LoggedUI(((Account)receiveMsg.getContent()));
-							System.out.println("µÇÂ½³É¹¦");
+							System.out.println("×¢²á³É¹¦");
+							new Login(acc);
 							Register.this.dispose();
 					}
 				}catch (Exception ex)
@@ -825,5 +829,4 @@ public final class Register extends JFrame implements MouseListener, MouseMotion
 		}
 		
 	}
-
 }

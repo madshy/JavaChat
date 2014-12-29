@@ -103,6 +103,11 @@ public final class Login {
 	
 	public Login()
 	{
+		this(null);
+	}
+	
+	public Login(Account acc)
+	{
 		initToolkit();
 		
 		try{
@@ -144,10 +149,17 @@ public final class Login {
 		accField = new JTextField();
 		accField.setLocation(accFieldSite);
 		accField.setSize(inputFieldDimen);
+		if (null != acc)
+		{
+			accField.setText(acc.getAccount().toString());
+		}
 		
 		pswField = new JPasswordField();
 		pswField.setSize(inputFieldDimen);
 		pswField.setLocation(pswFieldSite);	
+		if (null != acc){
+			accField.setText(acc.getPsw().toString());
+		}
 		
 		loginButton.addActionListener(new MyActionListener());
 		regButton.addActionListener(new MyActionListener());

@@ -120,8 +120,29 @@ public class ChatThread extends Thread{
 	 * @throws Exception
 	 */
 	private void register(Message msg) throws Exception{
-		
-	}
+		System.out.println("注册ing,准备连接数据库");
+		try{
+			db.connect();
+			System.out.println("数据库连接成功");
+		}catch(Exception excpt){
+			System.out.println("数据库连接失败");
+		}
+
+		Account account = (Account)msg.getContent();
+		Integer acc = Integer.parseInt(account.getAccount());
+		String psw = account.getPsw();
+		String name = account.getName();
+		String birth = account.getBirthday();
+		char sex = account.getSex() ? 'M' : 'F';
+		System.out.println("准备把数据写入数据库中");
+		db.update("insert into account(account,password,name,sex,birthday) "
+				+ "values(acc,psw,name,sex,birthday)");
+		System.out.println("成功写入数据库,准备返回信息给客户端");
+		Message sendMsg = new Message();		
+		sendMsg.setType(Message.Type.REGISTER);
+		this.sendMessage(sendMsg);
+		System.out.println("发送完毕");
+}
 	
 	/**
 	 * 处理下线信息
@@ -147,7 +168,7 @@ public class ChatThread extends Thread{
 	 * @throws Exception
 	 */
 	private void sendMessage(Message msg) throws Exception{
-		System.out.println("Account:" + ((Account)msg.getContent()).getAccount());
+//		System.out.println("Account:" + ((Account)msg.getContent()).getAccount());
 		for (ChatThread ct : server.getClients()){
 			/*如果没有这个，记得是出现异常的，但是还是不知道为什么*/
 			if (ct.account.getAccount().equals(((Account)msg.getContent()).getAccount()))
