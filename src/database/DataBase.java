@@ -6,6 +6,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import javax.swing.JOptionPane;
+
+import com.mysql.jdbc.exceptions.jdbc4.CommunicationsException;
+
 /**
  * 连接MySQL的类
  * @author shy
@@ -113,12 +117,18 @@ public class DataBase {
 	public void update(String strsql)
 	{
 		try{
-			statement = cnnt.createStatement();
+			statement = cnnt.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
 			statement.executeUpdate(strsql);
 			statement.close();
-		}catch(Exception e)
+			System.out.println("执行成功");
+		}catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException e)
 		{
-			
+			System.out.println("已经存在，无法重复注册");
+		}
+		catch(Exception e)
+		{
+			System.out.println("执行SQL语句发生错误");
+			e.printStackTrace();
 		}finally{
 			statement = null;
 		}

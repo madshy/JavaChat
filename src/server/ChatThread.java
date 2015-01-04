@@ -64,7 +64,7 @@ public class ChatThread extends Thread{
 	 * @throws Exception
 	 */
 	private void login(Message msg) throws Exception{
-		System.out.println("说好的登录呢");
+		System.out.println("准备登录，连接数据库ing");
 		try{
 		db.connect();
 		}catch(Exception excpt){}
@@ -134,13 +134,23 @@ public class ChatThread extends Thread{
 		String name = account.getName();
 		String birth = account.getBirthday();
 		char sex = account.getSex() ? 'M' : 'F';
+//		System.out.println("acc\tpsw\tname\tbirth\tsex");
+//		System.out.println(acc + "\t" + psw + "\t" + name + "\t" + birth + "\t" + sex);
 		System.out.println("准备把数据写入数据库中");
+//		db.update("insert into account(account,password,name,sex,birthday) "
+//				+ "values(" + acc + "," + psw + "," + name + "," + sex + "," + birth + ")");
 		db.update("insert into account(account,password,name,sex,birthday) "
-				+ "values(acc,psw,name,sex,birthday)");
+				+ "values(" + acc + ",'" + psw + "','" + name + "','" + sex + "','" + birth + "')");
 		System.out.println("成功写入数据库,准备返回信息给客户端");
 		Message sendMsg = new Message();		
 		sendMsg.setType(Message.Type.REGISTER);
-		this.sendMessage(sendMsg);
+//		this.sendMessage(sendMsg);
+//		try{
+//			oos.writeObject(sendMsg);
+//		}catch(Exception e)
+//		{
+//			e.printStackTrace();
+//		}
 		System.out.println("发送完毕");
 }
 	
