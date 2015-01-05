@@ -814,7 +814,6 @@ public final class Register extends JFrame implements MouseListener, MouseMotion
 							return ;
 						
 						default:
-//							new LoggedUI(((Account)receiveMsg.getContent()));
 							System.out.println("×¢²á³É¹¦");
 							new Login(acc);
 							Register.this.dispose();
@@ -827,6 +826,6 @@ public final class Register extends JFrame implements MouseListener, MouseMotion
 				}
 			}
 		}
-		
+
 	}
 }
