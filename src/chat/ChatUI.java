@@ -235,21 +235,21 @@ public final class ChatUI extends JFrame {
 		}
 	}
 	
-	public static void main(String[] args)
-	{
-//		Account acc = new Account("752825526", "madshy1994", "madshy", true, "1994-05-09");
-		Account acc = new Account();
-		acc.setAccount("7528255256");
-		acc.setPsw("madshy1994");
-		acc.setName("madshy");
-		acc.setSex(true);
-		acc.setBirthday("1994-05-09");
-		
-		Account frd = acc;
-//		Account frd = new Account("2624501247", "madshy1994", "madshy", true, "1994-05-09");
-		ChatUI chu = new ChatUI(acc, frd);
-		chu.setVisible(true);
-	}
+//	public static void main(String[] args)
+//	{
+////		Account acc = new Account("752825526", "madshy1994", "madshy", true, "1994-05-09");
+//		Account acc = new Account();
+//		acc.setAccount("7528255256");
+//		acc.setPsw("madshy1994");
+//		acc.setName("madshy");
+//		acc.setSex(true);
+//		acc.setBirthday("1994-05-09");
+//		
+//		Account frd = acc;
+////		Account frd = new Account("2624501247", "madshy1994", "madshy", true, "1994-05-09");
+//		ChatUI chu = new ChatUI(acc, frd);
+//		chu.setVisible(true);
+//	}
 }
 
 

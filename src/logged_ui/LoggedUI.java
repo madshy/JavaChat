@@ -15,6 +15,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import javax.swing.Icon;
@@ -24,7 +25,10 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.tools.Tool;
 
 public final class LoggedUI extends JFrame{
@@ -163,17 +167,27 @@ public final class LoggedUI extends JFrame{
 		
 		//添加朋友信息模块
 		JTabbedPane tabs = new JTabbedPane();
-		String[] name = {"Monkey.D.Luffy", "Ma.D.Shy", "Portgas.D.Ace", "Monkey.D.Dragon",
-				"Monkey.D.Garp", "Roronoa Zoro", "Sanji", "Trafalgar D Water Law"};
+		ArrayList<Friend> friend = acc.getFriendList();
+		String[] name = new String[friend.size()];
+		for (int i = 0; i < name.length; ++ i)
+		{
+			System.out.println("\naccount:" + friend.get(i).getAccount() + "\nname:" + friend.get(i).getName());
+			name[i] = friend.get(i).getName();
+		}
 		JList frdList = new JList(name);
 		frdList.setOpaque(false);
 		JList grpList = new JList();
-		tabs.addTab("Friends", frdList);
-		tabs.addTab("Groups", grpList);
+		JScrollPane jspFrd = new JScrollPane(frdList);
+		JScrollPane jspGrp = new JScrollPane(grpList);
+		jspFrd.setOpaque(false);
+		tabs.addTab("Friends", jspFrd);
+		tabs.addTab("Groups", jspGrp);
 		tabs.setSize(getWidth(), getHeight() - usrInfo.getHeight());
 		tabs.setLocation(0, usrInfo.getHeight());
 		tabs.setOpaque(false);
 		tabs.setBackground(Color.GREEN);
+		
+
 		ct.add(tabs);
 		
 		//Draw background for ui.This step must be the last.
@@ -198,21 +212,21 @@ public final class LoggedUI extends JFrame{
 		
 	}
 
-	public static void main(String[] args)
-	{
-//		Account acc = new Account("752825526", "madshy1994", "madshy", true, "1994-05-09");
-		
-		Account acc = new Account();
-		acc.setAccount("7528255256");
-		acc.setPsw("madshy1994");
-		acc.setName("madshy");
-		acc.setSex(true);
-		acc.setBirthday("1994-05-09");
-		
-		LoggedUI lgu = new LoggedUI(acc);
-		lgu.setVisible(true);
-		
-	}
+//	public static void main(String[] args)
+//	{
+////		Account acc = new Account("752825526", "madshy1994", "madshy", true, "1994-05-09");
+//		
+//		Account acc = new Account();
+//		acc.setAccount("7528255256");
+//		acc.setPsw("madshy1994");
+//		acc.setName("madshy");
+//		acc.setSex(true);
+//		acc.setBirthday("1994-05-09");
+//		
+//		LoggedUI lgu = new LoggedUI(acc);
+//		lgu.setVisible(true);
+//		
+//	}
 }
 
 //用户信息

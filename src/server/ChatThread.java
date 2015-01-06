@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import database.DataBase;
 import message.Message;
 import acc_info.Account;
+import acc_info.Friend;
 
 public class ChatThread extends Thread{
 	private Socket socket = null;
@@ -86,13 +87,44 @@ public class ChatThread extends Thread{
 					account.setName(rst.getString("name"));
 					account.setSex(rst.getBoolean("sex"));
 					account.setBirthday(rst.getString("birthday"));
+					
+					//查询朋友账号
+					ResultSet rstFrdAcc = db.query("select frd_acc from friend where account = '" + account.getAccount() + "'");
+					try{
+						//查询朋友具体信息
+						while (rstFrdAcc.next()){
+							ResultSet rstFrd = db.query("select * from account where account = '" + rstFrdAcc.getString(1) + "'");
+							try{
+								while (rstFrd.next()) {
+
+									Friend friend = new Friend();
+									friend.setAccount(rstFrd.getString("account"));		
+									friend.setName(rstFrd.getString("name"));
+									friend.setBirthday(rstFrd.getString("birthday"));
+									friend.setSex((rstFrd.getString("sex")).equals("M")? true : false);
+									account.addFriend(friend);
+								}
+							}catch (SQLException e)
+							{
+								e.printStackTrace();
+							}
+						}
+					}catch (SQLException e)
+					{
+						e.printStackTrace();
+					}
+/*					for (int i = 0; i < account.getFriendList().size(); ++ i)
+					{
+						System.out.println("\naccount:\t\t\tname:"
+								+ account.getFriendList().get(i).getAccount() + "\t\t\t"
+								+ account.getFriendList().get(i).getName());
+					}*/
 					this.account = account;
 					/*将该线程放入clients的集合中*/
 					server.getClients().add(this);
 					/*将当前账号添加到userlist中*/
 					server.getUserList().add(this.account);
 					sendMsg.setType(Message.Type.USERLIST);
-//					sendMsg.setContent(server.getUserList().clone());
 					sendMsg.setContent(account);
 					System.out.println("准备发送信息...");
 					this.sendMessage(sendMsg);
@@ -129,7 +161,7 @@ public class ChatThread extends Thread{
 		}
 
 		Account account = (Account)msg.getContent();
-		Integer acc = Integer.parseInt(account.getAccount());
+		String acc = account.getAccount();
 		String psw = account.getPsw();
 		String name = account.getName();
 		String birth = account.getBirthday();
@@ -153,6 +185,25 @@ public class ChatThread extends Thread{
 //		}
 		oos.writeObject(sendMsg);
 		System.out.println("发送完毕");
+		
+/*************************添加好友**************************/
+		//注意：对应的数据库需要两个关键字，不然就无法添加第二个好友
+		ResultSet rst = db.query("select * from account where account <> '" + acc + "'");
+		try
+		{
+			while (rst.next())
+			{
+				String frdAcc = rst.getString("account");
+				String frdName = rst.getString("name");
+				db.update("insert into friend(account, frd_acc, name) values('"
+						+ acc + "','" + frdAcc + "','" + frdName + "')");
+				db.update("insert into friend(account, frd_acc, name) values('"
+						+ frdAcc + "','" + acc + "','" + name + "')");
+			}
+		}catch(SQLException e)
+		{
+			e.printStackTrace();
+		}
 }
 	
 	/**
