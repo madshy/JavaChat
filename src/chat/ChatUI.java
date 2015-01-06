@@ -217,7 +217,7 @@ public final class ChatUI extends JFrame {
 				{
 					JLabel message = new JLabel("");
 					int max = -1;
-					String text = null;
+					String text = "<html>";
 					for (int i = 0; i < msg.getLineCount(); ++ i)
 					{
 						String part = null;
@@ -231,10 +231,13 @@ public final class ChatUI extends JFrame {
 						}
 						if (0 == i)
 						{
-							text = part;
+							text = text + part + "<br>";
+						}else if (i != msg.getLineCount() - 1)
+						{
+							text = text + part + "<br>";
 						}else
 						{
-							text = text + "\n" + part;
+							text = text + part + "<html>";
 						}
 					}
 					message.setText(text);
