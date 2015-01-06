@@ -2,6 +2,8 @@ package message;
 
 import java.io.Serializable;
 
+import acc_info.Info;
+
 public class Message implements Serializable {
 	/**
 	 * All kinds of message.
@@ -22,12 +24,16 @@ public class Message implements Serializable {
 		public static final int MESSAGE = 6;
 		public static final int LOGOUT = 7;
 		public static final int USERLIST = 8;
+		public static final int OFFLINE = 9;//不在线
+		public static final int ONLINE = 10;//在线
+		public static final int CHAT = 11;
+		public static final int UNCHAT = 12;
 	}
 	
 	private int type;
 	private Object content;
-	private String receiver;
-	private String sender;
+	private Info receiver;
+	private Info sender;
 	
 	public void setType(int type)
 	{
@@ -49,22 +55,22 @@ public class Message implements Serializable {
 		return content;
 	}
 	
-	public void setReceiver(String receiver)
+	public void setReceiver(Info receiver)
 	{
 		this.receiver = receiver;
 	}
 	
-	public String getReceiver()
+	public Info getReceiver()
 	{
 		return receiver;
 	}
 	
-	public void setSender(String sender)
+	public void setSender(Info sender)
 	{
 		this.sender = sender;
 	}
 	
-	public String getSender()
+	public Info getSender()
 	{
 		return sender;
 	}

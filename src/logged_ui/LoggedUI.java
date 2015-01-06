@@ -17,6 +17,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -35,12 +39,16 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.tools.Tool;
 
+import message.Message;
 import chat.ChatUI;
 
 public final class LoggedUI extends JFrame{
 	UserInfo usrInfo;
 	FriendInfo frdInfo;
 	Account acc;
+	
+	Socket socket = null;
+	ObjectOutputStream oos = null;
 	
 	Point mouseBefore = null;//For moving window.
 	
@@ -55,6 +63,7 @@ public final class LoggedUI extends JFrame{
 			throw new NullPointerException("To initialize LoggedUI, acc cannot be null.");
 		}
 		this.acc = acc;
+		
 		/*Paths for all images.*/
 		String bkgImgPath = "src/image/bkg_logged_ui.png";
 		String minImgPath = "src/image/minimize.png";
@@ -189,9 +198,29 @@ public final class LoggedUI extends JFrame{
 				// TODO Auto-generated method stub
 				if (2 == e.getClickCount())//双击进入聊天界面
 				{
+					try {
+						socket = new Socket("localhost", 9999);
+						oos = new ObjectOutputStream(socket.getOutputStream());
+					} catch (UnknownHostException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					
 					Info chat = acc.getFriendList().get(frdList.getSelectedIndex());
 					System.out.println("打开聊天界面");
-					new ChatUI(acc, chat);
+					Message sendMsg = new Message();
+					sendMsg.setSender(LoggedUI.this.acc);
+					sendMsg.setReceiver(chat);
+					sendMsg.setType(Message.Type.CHAT);
+					try {
+						oos.writeObject(sendMsg);
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 					System.out.println("打开成功");
 				}
 			}

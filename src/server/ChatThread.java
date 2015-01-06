@@ -6,20 +6,24 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
+import chat.ChatUI;
 import database.DataBase;
 import message.Message;
 import acc_info.Account;
 import acc_info.Friend;
+import acc_info.Info;
 
 public class ChatThread extends Thread{
 	private Socket socket = null;
 	private Server server;
 	private ObjectInputStream ois = null;
 	private ObjectOutputStream oos = null;
-	private Account account = null;
+	public Info account = null;
 	private boolean run = true;
 	DataBase db = new DataBase();
+	public ArrayList<ChatUI> chat = new ArrayList<ChatUI>();
 	
 	public ChatThread(Socket socket, Server server) throws IOException
 	{
@@ -50,6 +54,47 @@ public class ChatThread extends Thread{
 						
 					case Message.Type.MESSAGE://普通聊天信息
 						this.message(msg);
+						break;
+						
+					case Message.Type.CHAT://打开聊天界面
+						boolean isHave = false;
+						for (ChatThread cht : server.getClients())
+						{
+							if (msg.getSender().getAccount().equals(cht.account.getAccount()))
+							{
+								for (ChatUI chu : cht.chat)
+								{
+									if (chu._own.getAccount().equals(msg.getSender().getAccount()) 
+											&& chu._frd.getAccount().equals(msg.getReceiver().getAccount()))
+									{
+										isHave = true;
+										return ;
+									}
+								}
+								if (!isHave)
+								{
+									cht.chat.add(new ChatUI(msg.getSender(), msg.getReceiver()));
+								}
+								return;
+							}
+						}
+						break;
+						
+					case Message.Type.UNCHAT://关闭聊天界面
+						for (ChatThread cht : server.getClients())
+						{
+							if (msg.getSender().getAccount().equals(cht.account.getAccount()))
+							{
+								for (ChatUI chu : cht.chat)
+								{
+									if (chu._own.getAccount().equals(msg.getSender().getAccount()) 
+											&& chu._frd.getAccount().equals(msg.getReceiver().getAccount()))
+									{
+										cht.chat.remove(chu);
+									}
+								}
+							}
+						}
 						break;
 				}
 			}
@@ -226,7 +271,44 @@ public class ChatThread extends Thread{
 	 * @throws Exception
 	 */
 	private void message(Message msg) throws  Exception{
-		
+		boolean isExist = false;
+		//判断接受者是否在线，如果不在线则无法发送信息
+		for (ChatThread chatThread : server.getClients()){
+			if (chatThread.account.getAccount().equals(msg.getReceiver().getAccount()))
+			{
+				isExist = true;
+				for (ChatUI iterator : chat)
+				{
+					//聊天界面已经存在，直接处理信息
+					if (iterator._own.equals(msg.getSender())
+							&& iterator._frd.equals(msg.getReceiver()))
+					{
+						for (ChatUI inItr : chat)
+						{
+							Message sendMessage = new Message();
+							sendMessage.setType(Message.Type.ONLINE);
+							sendMessage.setContent(msg.getContent());
+							sendMessage.setSender(msg.getSender());
+							sendMessage.setReceiver(msg.getReceiver());
+							System.out.println((String)msg.getContent());
+							oos.writeObject(sendMessage);
+							return;
+						}
+					}
+				}
+				chat.add(new ChatUI(msg.getSender(), msg.getReceiver()));
+				chatThread.chat.add(new ChatUI(msg.getReceiver(), msg.getSender()));
+				Message sendMessage = new Message();
+				sendMessage.setType(Message.Type.ONLINE);
+				oos.writeObject(sendMessage);
+			}
+		}
+		if (!isExist)
+		{
+			Message sendMsg = new Message();
+			sendMsg.setType(Message.Type.OFFLINE);
+			oos.writeObject(sendMsg);
+		}
 	}
 	
 	/**

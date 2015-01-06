@@ -21,12 +21,19 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -34,14 +41,26 @@ import javax.swing.JTextArea;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.text.BadLocationException;
+import javax.xml.ws.handler.MessageContext.Scope;
 
+import server.Server;
 import logged_ui.LoggedUI;
+import message.Message;
 
-public final class ChatUI extends JFrame {
-	Info _own, _frd;
+public final class ChatUI extends JFrame{
+	public Info _own, _frd;
 	JScrollPane chatLog;//聊天记录
 	JTextArea msg;
 	int site = 0;//表示当前记录到达位置
+	int max = -1;
+	
+	JPanel content = new JPanel();
+	
+	private Socket socket = null;
+	public ObjectOutputStream oos = null;
+	public ObjectInputStream ois = null;
+	
+	private Receiver receiver = new Receiver();
 	
 	Point mouseBefore = null;//For moving window.
 	
@@ -49,10 +68,26 @@ public final class ChatUI extends JFrame {
 	{
 		if (null == own || null == frd)
 		{
-			throw new NullPointerException("AccountInfo own and frd cannot be null.");
+			throw new NullPointerException("Account Info own and frd cannot be null.");
 		}
 		_own = own;
 		_frd = frd;
+		
+		try {
+			socket = new Socket("localhost", 9999);
+			oos = new ObjectOutputStream(socket.getOutputStream());
+			ois = new ObjectInputStream(socket.getInputStream());
+		} catch (UnknownHostException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		} catch (IOException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+		catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
 		/*Paths for all images.*/
 		String bkgImgPath = "src/image/chat_bkg.png";
 		String minImgPath = "src/image/minimize.png";
@@ -174,7 +209,7 @@ public final class ChatUI extends JFrame {
 		JScrollPane jsp = new JScrollPane(msg);	
 		jp.add(jsp);
 		ct.add(jp);
-		jp.setBounds(0, getHeight() - 120 - msg.getHeight(), ChatUI.this.getWidth(), 100);
+		jp.setBounds(0, getHeight() - 120 - msg.getHeight(), getWidth(), 100);
 		jp.setOpaque(false);
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -191,14 +226,13 @@ public final class ChatUI extends JFrame {
 		frdInfo.setOpaque(false);
 		ct.add(frdInfo);
 		
-		final JPanel content = new JPanel();
 		content.setOpaque(false);
 		content.setLayout(null);
 		content.setVisible(false);
 		chatLog = new JScrollPane(content);
 		chatLog.setAutoscrolls(true);
 		chatLog.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-		chatLog.setBounds(0, frdInfo.getHeight(), 400, (int)jp.getLocation().getY() - jp.getHeight());
+		chatLog.setBounds(0, frdInfo.getHeight(), 400, (int)(jp.getLocation().getY() - jp.getHeight()));
 		ct.add(chatLog);
 		chatLog.setVisible(true);
 		
@@ -213,11 +247,9 @@ public final class ChatUI extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
-				if (null != msg)
-				{
-					JLabel message = new JLabel("");
-					int max = -1;
-					String text = "<html>";
+				if (!msg.getText().equals(""))
+				{					
+					ChatContent cc = new ChatContent();
 					for (int i = 0; i < msg.getLineCount(); ++ i)
 					{
 						String part = null;
@@ -229,27 +261,31 @@ public final class ChatUI extends JFrame {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
-						if (0 == i)
+						if (i != msg.getLineCount() - 1)
 						{
-							text = text + part + "<br>";
-						}else if (i != msg.getLineCount() - 1)
+							cc.append(part);
+						}
+						else
 						{
-							text = text + part + "<br>";
-						}else
-						{
-							text = text + part + "<html>";
+							cc.appendAndCommit(part);
 						}
 					}
-					message.setText(text);
-					FontMetrics fm = message.getFontMetrics(message.getFont());				
-					message.setBackground(Color.BLUE);
-					content.invalidate();
-					content.add(message);
-					message.setBounds(0, site, max * fm.getMaxAdvance(), msg.getLineCount() * fm.getHeight());
-					site += message.getSize().getHeight();
-					content.validate();
-					content.setVisible(true);
-					msg.setText("");
+					Message sendMsg = new Message();
+					sendMsg.setSender(_own);
+					sendMsg.setReceiver(_frd);
+					sendMsg.setType(Message.Type.MESSAGE);
+					sendMsg.setContent(cc.getContent());
+					
+					try{
+						oos.writeObject(sendMsg);
+					}catch (Exception exception)
+					{
+						exception.printStackTrace();
+					}
+					receiver.start();
+					
+				}else{
+					JOptionPane.showMessageDialog(ChatUI.this, "发送内容不能为空");
 				}
 			}
 		});
@@ -270,6 +306,7 @@ public final class ChatUI extends JFrame {
 			}
 		});
 		setVisible(true);
+		
 	}
 
 	/**
@@ -298,6 +335,60 @@ public final class ChatUI extends JFrame {
 		{
 			super.paintComponent(g);
 			g.drawString(_name.getText(), 5, (getHeight() - _name.getHeight()) / 2);
+		}
+	}
+
+	class Receiver extends Thread{
+		@Override
+		public void run()
+		{
+			try{
+				while (true)
+				{
+					Message receMsg = (Message)ChatUI.this.ois.readObject();
+					switch(receMsg.getType())
+					{
+					case Message.Type.ONLINE:
+						String text = (String)receMsg.getContent();
+						JLabel message = new JLabel("我说:" + text);
+						FontMetrics fm = message.getFontMetrics(message.getFont());				
+						message.setBackground(Color.BLUE);
+						content.invalidate();
+						content.add(message);
+						message.setBounds(0, site, max * fm.getMaxAdvance(), msg.getLineCount() * fm.getHeight());
+						site += message.getSize().getHeight();
+						content.validate();
+						content.setVisible(true);
+						msg.setText("");
+						break;
+						
+					default:
+						JOptionPane.showMessageDialog(ChatUI.this, "不能发信息给离线好友");
+					}
+				}
+			}catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public class ChatContent implements Serializable{
+		String content = "<html>";
+		public void append(String s)
+		{
+			content = content + s + "<br>";
+		}
+		public void appendAndCommit(String s)
+		{
+			content = content + s + "<html>";
+		}
+		public String getContent()
+		{
+			return content;
 		}
 	}
 }

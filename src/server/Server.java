@@ -6,13 +6,14 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 import acc_info.Account;
+import acc_info.Info;
 
 public class Server implements Runnable{
 	private Socket socket;
 	private ServerSocket serverSocket;
 	
 	private ArrayList<ChatThread> clients;//保存客户端的线程
-	private ArrayList<Account> userList;//保存在线用户
+	private ArrayList<Info> userList;//保存在线用户
 	
 	private boolean run;
 	
@@ -21,7 +22,7 @@ public class Server implements Runnable{
 		socket = null;
 		serverSocket = new ServerSocket(9999);
 		clients = new ArrayList<ChatThread>();
-		userList = new ArrayList<Account>();
+		userList = new ArrayList<Info>();
 		run = true;
 		new Thread(this).start();
 	}
@@ -55,7 +56,7 @@ public class Server implements Runnable{
 		return clients;
 	}
 	
-	public ArrayList<Account> getUserList()
+	public ArrayList<Info> getUserList()
 	{
 		return userList;
 	}
