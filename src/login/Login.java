@@ -158,7 +158,7 @@ public final class Login {
 		pswField.setSize(inputFieldDimen);
 		pswField.setLocation(pswFieldSite);	
 		if (null != acc){
-			accField.setText(acc.getPsw().toString());
+			pswField.setText(acc.getPsw().toString());
 		}
 		
 		loginButton.addActionListener(new MyActionListener());
@@ -309,7 +309,7 @@ public final class Login {
 							return ;
 						
 						default:
-//							new LoggedUI(((Account)receiveMsg.getContent()));
+							new LoggedUI(((Account)receiveMsg.getContent()));
 							System.out.println("µÇÂ½³É¹¦");
 							frame.dispose();
 					}

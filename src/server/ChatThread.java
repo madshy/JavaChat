@@ -140,7 +140,7 @@ public class ChatThread extends Thread{
 //		db.update("insert into account(account,password,name,sex,birthday) "
 //				+ "values(" + acc + "," + psw + "," + name + "," + sex + "," + birth + ")");
 		db.update("insert into account(account,password,name,sex,birthday) "
-				+ "values(" + acc + ",'" + psw + "','" + name + "','" + sex + "','" + birth + "')");
+				+ "values('" + acc + "','" + psw + "','" + name + "','" + sex + "','" + birth + "')");
 		System.out.println("成功写入数据库,准备返回信息给客户端");
 		Message sendMsg = new Message();		
 		sendMsg.setType(Message.Type.REGISTER);
@@ -151,6 +151,7 @@ public class ChatThread extends Thread{
 //		{
 //			e.printStackTrace();
 //		}
+		oos.writeObject(sendMsg);
 		System.out.println("发送完毕");
 }
 	
