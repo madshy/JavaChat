@@ -12,13 +12,16 @@ public class Message implements Serializable {
 		public static final int REGISTER = 1;
 		public static final int LOGINFAIL = 2;
 		public static final int REGISTERFAIL = 3;
+		/**该账号不存在**/
+		public static final int NOACCOUNT = 4;
+		/**密码错误**/
+		public static final int WRONGPSW = 5;
 		/**
 		 * 普通信息
 		 */
-		public static final int MESSAGE = 4;
-		public static final int LOGOUT = 5;
-//		public static final int ALL = 6;
-		public static final int USERLIST = 7;
+		public static final int MESSAGE = 6;
+		public static final int LOGOUT = 7;
+		public static final int USERLIST = 8;
 	}
 	
 	private int type;

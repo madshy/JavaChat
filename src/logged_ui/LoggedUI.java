@@ -11,6 +11,8 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -27,9 +29,13 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.tools.Tool;
+
+import chat.ChatUI;
 
 public final class LoggedUI extends JFrame{
 	UserInfo usrInfo;
@@ -174,9 +180,22 @@ public final class LoggedUI extends JFrame{
 			System.out.println("\naccount:" + friend.get(i).getAccount() + "\nname:" + friend.get(i).getName());
 			name[i] = friend.get(i).getName();
 		}
-		JList frdList = new JList(name);
+		final JList frdList = new JList(name);
 		frdList.setOpaque(false);
-		JList grpList = new JList();
+		final JList grpList = new JList();
+		frdList.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				// TODO Auto-generated method stub
+				if (2 == e.getClickCount())//双击进入聊天界面
+				{
+					Info chat = acc.getFriendList().get(frdList.getSelectedIndex());
+					System.out.println("打开聊天界面");
+					new ChatUI(acc, chat);
+					System.out.println("打开成功");
+				}
+			}
+		});
 		JScrollPane jspFrd = new JScrollPane(frdList);
 		JScrollPane jspGrp = new JScrollPane(grpList);
 		jspFrd.setOpaque(false);
@@ -185,8 +204,7 @@ public final class LoggedUI extends JFrame{
 		tabs.setSize(getWidth(), getHeight() - usrInfo.getHeight());
 		tabs.setLocation(0, usrInfo.getHeight());
 		tabs.setOpaque(false);
-		tabs.setBackground(Color.GREEN);
-		
+		tabs.setBackground(Color.GREEN);	
 
 		ct.add(tabs);
 		

@@ -5,12 +5,17 @@ import acc_info.*;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -26,17 +31,21 @@ import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingConstants;
+import javax.swing.text.BadLocationException;
 
 import logged_ui.LoggedUI;
 
 public final class ChatUI extends JFrame {
-	Account _own, _frd;
+	Info _own, _frd;
 	JScrollPane chatLog;//聊天记录
 	JTextArea msg;
+	int site = 0;//表示当前记录到达位置
 	
 	Point mouseBefore = null;//For moving window.
 	
-	public ChatUI(Account own, Account frd)
+	public ChatUI(Info own, Info frd)
 	{
 		if (null == own || null == frd)
 		{
@@ -182,12 +191,65 @@ public final class ChatUI extends JFrame {
 		frdInfo.setOpaque(false);
 		ct.add(frdInfo);
 		
+		final JPanel content = new JPanel();
+		content.setOpaque(false);
+		content.setLayout(null);
+		content.setVisible(false);
+		chatLog = new JScrollPane(content);
+		chatLog.setAutoscrolls(true);
+		chatLog.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+		chatLog.setBounds(0, frdInfo.getHeight(), 400, (int)jp.getLocation().getY() - jp.getHeight());
+		ct.add(chatLog);
+		chatLog.setVisible(true);
+		
 		JButton send = new JButton("发送");
 		send.setSize(60, 20);
 		send.setBorderPainted(false);
 		send.setBackground(new Color(0, 170, 228));
 		ct.add(send);
 		send.setLocation(getWidth() - send.getWidth(), getHeight() - send.getHeight());
+		send.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				if (null != msg)
+				{
+					JLabel message = new JLabel("");
+					int max = -1;
+					String text = null;
+					for (int i = 0; i < msg.getLineCount(); ++ i)
+					{
+						String part = null;
+						try {
+							int len = msg.getLineEndOffset(i) - msg.getLineStartOffset(i);
+							part = msg.getText(msg.getLineStartOffset(i), len);
+							max = max > len ? max : len;
+						} catch (BadLocationException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						if (0 == i)
+						{
+							text = part;
+						}else
+						{
+							text = text + "\n" + part;
+						}
+					}
+					message.setText(text);
+					FontMetrics fm = message.getFontMetrics(message.getFont());				
+					message.setBackground(Color.BLUE);
+					content.invalidate();
+					content.add(message);
+					message.setBounds(0, site, max * fm.getMaxAdvance(), msg.getLineCount() * fm.getHeight());
+					site += message.getSize().getHeight();
+					content.validate();
+					content.setVisible(true);
+					msg.setText("");
+				}
+			}
+		});
 		ct.add(new JPanel(){
 			public void paintComponent(Graphics g)
 			{
@@ -204,6 +266,7 @@ public final class ChatUI extends JFrame {
 				ChatUI.this.setVisible(true);
 			}
 		});
+		setVisible(true);
 	}
 
 	/**
@@ -231,25 +294,9 @@ public final class ChatUI extends JFrame {
 		public void paintComponent(Graphics g)
 		{
 			super.paintComponent(g);
-			g.drawString(_name.getText(), 60, (getHeight() - _name.getHeight()) / 2);
+			g.drawString(_name.getText(), 5, (getHeight() - _name.getHeight()) / 2);
 		}
 	}
-	
-//	public static void main(String[] args)
-//	{
-////		Account acc = new Account("752825526", "madshy1994", "madshy", true, "1994-05-09");
-//		Account acc = new Account();
-//		acc.setAccount("7528255256");
-//		acc.setPsw("madshy1994");
-//		acc.setName("madshy");
-//		acc.setSex(true);
-//		acc.setBirthday("1994-05-09");
-//		
-//		Account frd = acc;
-////		Account frd = new Account("2624501247", "madshy1994", "madshy", true, "1994-05-09");
-//		ChatUI chu = new ChatUI(acc, frd);
-//		chu.setVisible(true);
-//	}
 }
 
 

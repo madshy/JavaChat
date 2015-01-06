@@ -303,10 +303,16 @@ public final class Login {
 					
 					switch(receiveMsg.getType())
 					{
-						case Message.Type.LOGINFAIL:
-							JOptionPane.showMessageDialog(frame, "登录失败，请重新登录");
+						case Message.Type.WRONGPSW:
+							JOptionPane.showMessageDialog(frame, "密码错误，请重新登录");
 							socket.close();
 							return ;
+							
+						case Message.Type.NOACCOUNT:
+							JOptionPane.showMessageDialog(frame, "没有该账号");
+							socket.close();
+							return;
+
 						
 						default:
 							new LoggedUI(((Account)receiveMsg.getContent()));

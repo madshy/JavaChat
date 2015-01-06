@@ -67,15 +67,18 @@ public class ChatThread extends Thread{
 	private void login(Message msg) throws Exception{
 		System.out.println("准备登录，连接数据库ing");
 		try{
-		db.connect();
-		}catch(Exception excpt){}
-		Integer int_acc = Integer.parseInt(((Account)msg.getContent()).getAccount());
-		ResultSet rst = db.query("select * from account where account = " + int_acc);
-		String acc = null;
+			db.connect();
+		}catch(Exception excpt){
+			System.out.println("连接数据库出错");
+			excpt.printStackTrace();
+		}
+		System.out.println("连接成功");
+		String acc = ((Account)msg.getContent()).getAccount();
+		ResultSet rst = db.query("select * from account where account = '" + acc + "'");
 		String psw = null;
 		Message sendMsg = new Message();
 		try {
-			while(rst.next())
+			if(rst.next())
 			{
 				psw = rst.getString("password");
 				if (psw.equals(new String(((Account)msg.getContent()).getPsw())))
@@ -113,12 +116,6 @@ public class ChatThread extends Thread{
 					{
 						e.printStackTrace();
 					}
-/*					for (int i = 0; i < account.getFriendList().size(); ++ i)
-					{
-						System.out.println("\naccount:\t\t\tname:"
-								+ account.getFriendList().get(i).getAccount() + "\t\t\t"
-								+ account.getFriendList().get(i).getName());
-					}*/
 					this.account = account;
 					/*将该线程放入clients的集合中*/
 					server.getClients().add(this);
@@ -133,12 +130,20 @@ public class ChatThread extends Thread{
 				}
 				else
 				{
-					sendMsg.setType(Message.Type.LOGINFAIL);
+					sendMsg.setType(Message.Type.WRONGPSW);
 					oos.writeObject(sendMsg);
 					run = false;
 					socket.close();
 					return ;
 				}
+			}
+			else
+			{
+				sendMsg.setType(Message.Type.NOACCOUNT);
+				oos.writeObject(sendMsg);
+				run = false;
+				socket.close();
+				
 			}
 		} catch (SQLException e1) {
 			// TODO Auto-generated catch block
