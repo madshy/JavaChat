@@ -96,7 +96,7 @@ public class ChatThread extends Thread{
 							ResultSet rstFrd = db.query("select * from account where account = '" + rstFrdAcc.getString(1) + "'");
 							try{
 								while (rstFrd.next()) {
-
+									//这里的friend不能放到外面定义，由于java是引用型的，所以每次引用一个对象。
 									Friend friend = new Friend();
 									friend.setAccount(rstFrd.getString("account"));		
 									friend.setName(rstFrd.getString("name"));
@@ -193,6 +193,7 @@ public class ChatThread extends Thread{
 		{
 			while (rst.next())
 			{
+				//这里的两个String同样无法放到循环外面，等到有时间的时候可以测试一下为什么。
 				String frdAcc = rst.getString("account");
 				String frdName = rst.getString("name");
 				db.update("insert into friend(account, frd_acc, name) values('"
