@@ -43,6 +43,10 @@ import message.Message;
 import register.Register;
 
 public final class Login {
+	
+	Socket socket = null;
+	ObjectOutputStream oos = null;
+	
 	JFrame frame;//µÇÂ¼½çÃæµÄ¿ò¼Ü
 	MyPanel background;
 	private Toolkit tk;

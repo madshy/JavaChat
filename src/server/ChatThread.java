@@ -68,6 +68,7 @@ public class ChatThread extends Thread{
 											&& chu._frd.getAccount().equals(msg.getReceiver().getAccount()))
 									{
 										isHave = true;
+										chu.setVisible(true);
 										return ;
 									}
 								}
@@ -81,16 +82,23 @@ public class ChatThread extends Thread{
 						break;
 						
 					case Message.Type.UNCHAT://关闭聊天界面
+						System.out.println("查询关闭的界面");
 						for (ChatThread cht : server.getClients())
 						{
 							if (msg.getSender().getAccount().equals(cht.account.getAccount()))
-							{
+							{		
+								System.out.println("size:" + cht.chat.size());
 								for (ChatUI chu : cht.chat)
 								{
 									if (chu._own.getAccount().equals(msg.getSender().getAccount()) 
 											&& chu._frd.getAccount().equals(msg.getReceiver().getAccount()))
 									{
 										cht.chat.remove(chu);
+										Message sendMsg = new Message();
+										sendMsg.setType(Message.Type.CLOSEOK);
+										System.out.println("发送结果信息");
+										oos.writeObject(sendMsg);
+										System.out.println("发送完毕");										
 									}
 								}
 							}

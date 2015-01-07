@@ -72,22 +72,7 @@ public final class ChatUI extends JFrame{
 		}
 		_own = own;
 		_frd = frd;
-		
-		try {
-			socket = new Socket("localhost", 9999);
-			oos = new ObjectOutputStream(socket.getOutputStream());
-			ois = new ObjectInputStream(socket.getInputStream());
-		} catch (UnknownHostException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		} catch (IOException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		}
-		catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
-		}
+
 		/*Paths for all images.*/
 		String bkgImgPath = "src/image/chat_bkg.png";
 		String minImgPath = "src/image/minimize.png";
@@ -151,7 +136,51 @@ public final class ChatUI extends JFrame{
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				// TODO Auto-generated method stub
-				System.exit(0);
+				try {
+					socket = new Socket("localhost", 9999);
+					oos = new ObjectOutputStream(socket.getOutputStream());
+					ois = new ObjectInputStream(socket.getInputStream());
+				} catch (UnknownHostException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+				System.out.println("关闭聊天界面");
+				Message sendMsg = new Message();
+				sendMsg.setSender(ChatUI.this._own);
+				sendMsg.setReceiver(ChatUI.this._frd);
+				sendMsg.setType(Message.Type.UNCHAT);
+				try {
+					oos.writeObject(sendMsg);
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				Message receMsg = null;
+				try {
+					receMsg = (Message)ois.readObject();
+				} catch (ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				switch (receMsg.getType())
+				{
+				case Message.Type.CLOSEFAIL:
+					//关闭失败
+					System.out.println("关闭失败");
+					break;
+					
+				case Message.Type.CLOSEOK:
+					System.out.println("关闭成功");
+					System.exit(0);
+					break;
+				}
 			}
 		});
 		closeButton.addMouseListener(new MouseAdapter() {

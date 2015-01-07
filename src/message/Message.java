@@ -28,6 +28,8 @@ public class Message implements Serializable {
 		public static final int ONLINE = 10;//ÔÚÏß
 		public static final int CHAT = 11;
 		public static final int UNCHAT = 12;
+		public static final int CLOSEFAIL = 13;
+		public static final int CLOSEOK = 14;
 	}
 	
 	private int type;
