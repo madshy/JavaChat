@@ -88,6 +88,13 @@ public class ChatThread extends Thread{
 							if (msg.getSender().getAccount().equals(cht.account.getAccount()))
 							{		
 								System.out.println("size:" + cht.chat.size());
+/**
+ * 使用这种for循环应该特别注意，当容器为空时会卡死出异常
+ * 所以这里的则不会运行到第二个for循环的外面，具体还需要测试
+ * 但是如果使用的是原始遍历形式则不会出问题
+ * 所以这里问题就出在本来就只有一个，但是被remove掉了，然后就没有了
+ * 猜测是这样的。
+ */
 								for (ChatUI chu : cht.chat)
 								{
 									if (chu._own.getAccount().equals(msg.getSender().getAccount()) 
