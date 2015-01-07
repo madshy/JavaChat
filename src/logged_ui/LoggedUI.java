@@ -18,6 +18,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -30,6 +31,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -49,6 +51,7 @@ public final class LoggedUI extends JFrame{
 	
 	Socket socket = null;
 	ObjectOutputStream oos = null;
+	ObjectInputStream ois = null;
 	
 	Point mouseBefore = null;//For moving window.
 	
@@ -63,6 +66,27 @@ public final class LoggedUI extends JFrame{
 			throw new NullPointerException("To initialize LoggedUI, acc cannot be null.");
 		}
 		this.acc = acc;
+		
+		try {
+			socket = new Socket("localhost", 9999);
+			oos = new ObjectOutputStream(socket.getOutputStream());
+			ois = new ObjectInputStream(socket.getInputStream());
+		} catch (UnknownHostException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		Message logMsg = new Message();
+		logMsg.setType(Message.Type.LOGIN_OK);
+		logMsg.setContent(this.acc);
+		try {
+			oos.writeObject(logMsg);
+		} catch (IOException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
 		
 		/*Paths for all images.*/
 		String bkgImgPath = "src/image/bkg_logged_ui.png";
@@ -124,7 +148,45 @@ public final class LoggedUI extends JFrame{
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				// TODO Auto-generated method stub
-				System.exit(0);
+				Message sendMsg = new Message();
+				sendMsg.setType(Message.Type.LOGOUT);
+				sendMsg.setSender(acc);
+				
+				try {
+					oos.writeObject(sendMsg);
+				}catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				Message receMsg = null;
+				try {
+					receMsg = (Message)ois.readObject();
+				} catch (ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				switch (receMsg.getType())
+				{
+				case Message.Type.CLOSEOK:
+					System.out.println("登出成功");
+					try {
+						socket.close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					System.exit(0);
+					break;
+					
+				case Message.Type.CLOSEFAIL:
+					JOptionPane.showMessageDialog(LoggedUI.this, "退出失败");
+					break;
+				}
 			}
 		});
 		closeButton.addMouseListener(new MouseAdapter() {
@@ -197,18 +259,7 @@ public final class LoggedUI extends JFrame{
 			public void mouseClicked(MouseEvent e) {
 				// TODO Auto-generated method stub
 				if (2 == e.getClickCount())//双击进入聊天界面
-				{
-					try {
-						socket = new Socket("localhost", 9999);
-						oos = new ObjectOutputStream(socket.getOutputStream());
-					} catch (UnknownHostException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-					
+				{					
 					Info chat = acc.getFriendList().get(frdList.getSelectedIndex());
 					System.out.println("打开聊天界面");
 					Message sendMsg = new Message();

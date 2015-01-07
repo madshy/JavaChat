@@ -30,6 +30,7 @@ public class Message implements Serializable {
 		public static final int UNCHAT = 12;
 		public static final int CLOSEFAIL = 13;
 		public static final int CLOSEOK = 14;
+		public static final int LOGIN_OK = 15;//µÇÂ¼³É¹¦
 	}
 	
 	private int type;

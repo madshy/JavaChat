@@ -20,9 +20,11 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -46,6 +48,7 @@ public final class Login {
 	
 	Socket socket = null;
 	ObjectOutputStream oos = null;
+	ObjectInputStream ois = null;
 	
 	JFrame frame;//登录界面的框架
 	MyPanel background;
@@ -112,6 +115,18 @@ public final class Login {
 	
 	public Login(Account acc)
 	{
+		try {
+			socket = new Socket("localhost", 9999);
+			oos = new ObjectOutputStream(socket.getOutputStream());
+			ois = new ObjectInputStream(socket.getInputStream());
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		initToolkit();
 		
 		try{
@@ -299,11 +314,8 @@ public final class Login {
 				msg.setContent(acc);
 				
 				try{
-					Socket socket = new Socket("localhost", 9999);
-					ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-					ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
 					oos.writeObject(msg);
-					Message receiveMsg = (Message)ois.readObject();
+					Message receiveMsg = (Message)(ois.readObject());
 					
 					switch(receiveMsg.getType())
 					{
@@ -320,6 +332,7 @@ public final class Login {
 						
 						default:
 							new LoggedUI(((Account)receiveMsg.getContent()));
+							socket.close();
 							System.out.println("登陆成功");
 							frame.dispose();
 					}
@@ -473,6 +486,12 @@ public final class Login {
 			//点击关闭按钮
 			if (e.getSource() == closeButton)
 			{
+				try {
+					socket.close();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				System.exit(0);
 			}
 			//点击最小化按钮

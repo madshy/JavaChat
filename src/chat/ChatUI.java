@@ -72,6 +72,18 @@ public final class ChatUI extends JFrame{
 		}
 		_own = own;
 		_frd = frd;
+		
+		try {
+			socket = new Socket("localhost", 9999);
+			oos = new ObjectOutputStream(socket.getOutputStream());
+			ois = new ObjectInputStream(socket.getInputStream());
+		} catch (UnknownHostException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 
 		/*Paths for all images.*/
 		String bkgImgPath = "src/image/chat_bkg.png";
@@ -136,18 +148,6 @@ public final class ChatUI extends JFrame{
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				// TODO Auto-generated method stub
-				try {
-					socket = new Socket("localhost", 9999);
-					oos = new ObjectOutputStream(socket.getOutputStream());
-					ois = new ObjectInputStream(socket.getInputStream());
-				} catch (UnknownHostException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-				
 				System.out.println("关闭聊天界面");
 				Message sendMsg = new Message();
 				sendMsg.setSender(ChatUI.this._own);
@@ -178,6 +178,12 @@ public final class ChatUI extends JFrame{
 					
 				case Message.Type.CLOSEOK:
 					System.out.println("关闭成功");
+					try {
+						socket.close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					System.exit(0);
 					break;
 				}
@@ -299,6 +305,7 @@ public final class ChatUI extends JFrame{
 							cc.appendAndCommit(part);
 						}
 					}
+						
 					Message sendMsg = new Message();
 					sendMsg.setSender(_own);
 					sendMsg.setReceiver(_frd);
